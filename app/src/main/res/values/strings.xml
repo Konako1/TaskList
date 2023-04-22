@@ -1,3 +1,15 @@
 <resources>
-    <string name="app_name">TaskListLab</string>
+    <string name="app_name">Амогус</string>
+    <string name="back_button">Назад</string>
+
+    <string name="salto">Сделать сальто</string>
+    <string name="pp">Поставить 500pp</string>
+    <string name="fourth_lab">Сделать 4 лабу</string>
+    <string name="find_job">Найти работу</string>
+
+    <string name="salto_desc">Каво</string>
+    <string name="pp_desc" />
+    <string name="fourth_lab_desc">Ты ее уже сделал, дурашка</string>
+    <string name="find_job_desc">ХАХАХХАХАХАХХАХАХАХАХАХААХХАХАХХАХАХАХАХХАХАХАХХАХАХАХХАХАХАХАХАХХАХАХАХХАХАХАХАХХАХАХАХХА</string>
+
 </resources>
