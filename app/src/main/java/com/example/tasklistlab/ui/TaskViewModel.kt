@@ -1,6 +1,6 @@
 package com.example.tasklistlab.ui
 
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.currentComposer
 import androidx.lifecycle.ViewModel
 import com.example.tasklistlab.data.DataSource
 import com.example.tasklistlab.data.Task
@@ -8,6 +8,7 @@ import com.example.tasklistlab.data.TaskListUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -16,31 +17,46 @@ class TaskViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(TaskListUiState(taskList = preGenTasks()))
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
-    fun getSortedTasks(): List<Task> {
-        val taskList = _uiState.value.taskList
+
+    fun updateTaskList() {
+        val taskList = sortTasks(_uiState.value.taskList.toMutableList())
+        _uiState.update { currentState ->
+            currentState.copy(
+                taskList = taskList
+            )
+        }
+    }
+
+
+    private fun sortTasks(taskList: MutableList<Task>): MutableList<Task> {
         var sorted = true
         // bubble sort
         while (sorted) {
             sorted = false
-            for (i in taskList.indices - 2) {
-                if (taskList[i].completionDate < taskList[i + 1].completionDate) {
+            for (i in 0..taskList.size - 2) {
+                if (taskList[i].completionDate > taskList[i + 1].completionDate) {
                     val swap = taskList[i]
+                    val newTask = Task(
+                        title = swap.title,
+                        description = swap.description,
+                        completionDate = swap.completionDate,
+                        isCompleted = swap.isCompleted
+                    )
                     taskList[i] = taskList[i + 1]
-                    taskList[i + 1] = swap
+                    taskList[i + 1] = newTask
                     sorted = true
                 }
             }
         }
 
-        var sortedTaskList: MutableList<Task> = taskList
+        var sortedTaskList: MutableList<Task> = taskList.toMutableList()
         var completedTaskList: MutableList<Task> = mutableListOf()
-        var removed = 0
+
         // completed and non completed task sort (completed going to the end of list)
-        for ((i, task) in taskList.withIndex()) {
+        for (task in taskList) {
             if (task.isCompleted) {
                 completedTaskList.add(task)
-                sortedTaskList.removeAt(i - removed)
-                removed++
+                sortedTaskList.remove(task)
             }
         }
 
@@ -56,29 +72,27 @@ class TaskViewModel : ViewModel() {
         ))
     }
 
-    fun markTaskAsCompleted(taskId: Int) {
-        _uiState.value.taskList[taskId].isCompleted = true
+    fun changeTaskCompletedValue(task: Task) {
+        _uiState.update { currentState ->
+            val index = currentState.taskList.indexOf(task)
+            currentState.taskList[index].isCompleted = !task.isCompleted
+            currentState.copy(
+                taskList = currentState.taskList.toMutableList()
+            )
+        }
+
     }
 
-    fun deleteTask(taskId: Int) {
-        _uiState.value.taskList.removeAt(taskId)
+    fun changeSelectedTask(task: Task) {
+        _uiState.update {
+            it.copy(
+                selectedTask = task
+            )
+        }
     }
 
-    /**
-     * Returns the colors of [Task], where first is background color and second if circle color
-     */
-    fun getColorsPalette(task: Task): Pair<Color, Color> {
-        var circleColor = Color(0x73C1F0B5)
-        var bgColor = Color(0x7357E031)
-        if (task.isCompleted) {
-            circleColor = Color(0x73D8D8D8)
-            bgColor = Color.Gray
-        }
-        else if (task.completionDate < LocalDate.now()) {
-            circleColor = Color(0x9EFF8B8B)
-            bgColor = Color(0x9EFF4747)
-        }
-        return Pair(bgColor, circleColor)
+    fun deleteTask(task: Task) {
+        _uiState.value.taskList.remove(task)
     }
 
     private fun preGenTasks(): MutableList<Task> {
@@ -88,9 +102,11 @@ class TaskViewModel : ViewModel() {
                 Task(
                     title = task.first,
                     description = task.second,
-                    completionDate = LocalDate.now().plusDays(Random.nextLong(1, 10))
+                    completionDate = LocalDate.now().plusDays(Random.nextLong(-5, 5)),
+                    isCompleted = Random.nextBoolean()
             ))
         }
-        return taskList
+
+        return sortTasks(taskList)
     }
 }

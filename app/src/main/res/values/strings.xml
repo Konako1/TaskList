@@ -12,4 +12,6 @@
     <string name="fourth_lab_desc">Ты ее уже сделал, дурашка</string>
     <string name="find_job_desc">ХАХАХХАХАХАХХАХАХАХАХАХААХХАХАХХАХАХАХАХХАХАХАХХАХАХАХХАХАХАХАХАХХАХАХАХХАХАХАХАХХАХАХАХХА</string>
 
+    <string name="create_task">Создание задачи</string>
+    <string name="view_task">Просмотр задачи</string>
 </resources>
