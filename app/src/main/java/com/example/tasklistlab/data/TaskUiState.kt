@@ -2,7 +2,7 @@ package com.example.tasklistlab.data
 
 import java.time.LocalDate
 
-data class Task(
+data class TaskUiState(
     var title: String = "",
 
     var description: String? = null,

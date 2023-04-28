@@ -13,5 +13,5 @@
     <string name="find_job_desc">ХАХАХХАХАХАХХАХАХАХАХАХААХХАХАХХАХАХАХАХХАХАХАХХАХАХАХХАХАХАХАХАХХАХАХАХХАХАХАХАХХАХАХАХХА</string>
 
     <string name="create_task">Создание задачи</string>
-    <string name="view_task">Просмотр задачи</string>
+    <string name="view_task">Карточка задачи</string>
 </resources>

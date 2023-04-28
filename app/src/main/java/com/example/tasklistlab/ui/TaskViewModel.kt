@@ -1,9 +1,8 @@
 package com.example.tasklistlab.ui
 
-import androidx.compose.runtime.currentComposer
 import androidx.lifecycle.ViewModel
 import com.example.tasklistlab.data.DataSource
-import com.example.tasklistlab.data.Task
+import com.example.tasklistlab.data.TaskUiState
 import com.example.tasklistlab.data.TaskListUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,65 +16,74 @@ class TaskViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(TaskListUiState(taskList = preGenTasks()))
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
+    private val _taskUiState = MutableStateFlow(TaskUiState())
+    val taskUiState: StateFlow<TaskUiState> = _taskUiState.asStateFlow()
+
 
     fun updateTaskList() {
         val taskList = sortTasks(_uiState.value.taskList.toMutableList())
         _uiState.update { currentState ->
             currentState.copy(
-                taskList = taskList
+                taskList = taskList,
+                currentTask = TaskUiState()
             )
         }
     }
 
 
-    private fun sortTasks(taskList: MutableList<Task>): MutableList<Task> {
+    private fun sortTasks(taskUiStateList: MutableList<TaskUiState>): MutableList<TaskUiState> {
         var sorted = true
         // bubble sort
         while (sorted) {
             sorted = false
-            for (i in 0..taskList.size - 2) {
-                if (taskList[i].completionDate > taskList[i + 1].completionDate) {
-                    val swap = taskList[i]
-                    val newTask = Task(
+            for (i in 0..taskUiStateList.size - 2) {
+                if (taskUiStateList[i].completionDate > taskUiStateList[i + 1].completionDate) {
+                    val swap = taskUiStateList[i]
+                    val newTaskUiState = TaskUiState(
                         title = swap.title,
                         description = swap.description,
                         completionDate = swap.completionDate,
                         isCompleted = swap.isCompleted
                     )
-                    taskList[i] = taskList[i + 1]
-                    taskList[i + 1] = newTask
+                    taskUiStateList[i] = taskUiStateList[i + 1]
+                    taskUiStateList[i + 1] = newTaskUiState
                     sorted = true
                 }
             }
         }
 
-        var sortedTaskList: MutableList<Task> = taskList.toMutableList()
-        var completedTaskList: MutableList<Task> = mutableListOf()
+        var sortedTaskListUiState: MutableList<TaskUiState> = taskUiStateList.toMutableList()
+        var completedTaskListUiState: MutableList<TaskUiState> = mutableListOf()
 
         // completed and non completed task sort (completed going to the end of list)
-        for (task in taskList) {
+        for (task in taskUiStateList) {
             if (task.isCompleted) {
-                completedTaskList.add(task)
-                sortedTaskList.remove(task)
+                completedTaskListUiState.add(task)
+                sortedTaskListUiState.remove(task)
             }
         }
 
-        sortedTaskList.addAll(completedTaskList)
-        return sortedTaskList
+        sortedTaskListUiState.addAll(completedTaskListUiState)
+        return sortedTaskListUiState
     }
 
     fun addTaskToList(title: String, description: String?, completionDate: LocalDate) {
-        _uiState.value.taskList.add(Task(
-            title = title,
-            description = description,
-            completionDate = completionDate,
-        ))
+        _uiState.update { currentState ->
+            currentState.taskList.add(TaskUiState(
+                title = title,
+                description = description,
+                completionDate = completionDate
+            ))
+            currentState.copy(
+                taskList = currentState.taskList
+            )
+        }
     }
 
-    fun changeTaskCompletedValue(task: Task) {
+    fun changeTaskCompletedValue(taskUiState: TaskUiState) {
         _uiState.update { currentState ->
-            val index = currentState.taskList.indexOf(task)
-            currentState.taskList[index].isCompleted = !task.isCompleted
+            val index = currentState.taskList.indexOf(taskUiState)
+            currentState.taskList[index].isCompleted = !taskUiState.isCompleted
             currentState.copy(
                 taskList = currentState.taskList.toMutableList()
             )
@@ -83,23 +91,46 @@ class TaskViewModel : ViewModel() {
 
     }
 
-    fun changeSelectedTask(task: Task) {
+    fun changeSelectedTask(taskUiState: TaskUiState) {
         _uiState.update {
             it.copy(
-                selectedTask = task
+                currentTask = taskUiState
             )
         }
     }
 
-    fun deleteTask(task: Task) {
-        _uiState.value.taskList.remove(task)
+    fun deleteTask(taskUiState: TaskUiState) {
+        _uiState.value.taskList.remove(taskUiState)
     }
 
-    private fun preGenTasks(): MutableList<Task> {
-        val taskList: MutableList<Task> = mutableListOf()
+    fun editTaskData(
+        task: TaskUiState,
+        title: String? = null,
+        description: String? = null,
+        completionDate: LocalDate? = null,
+        isCompleted: Boolean? = null
+    )
+    {
+        val index = _uiState.value.taskList.indexOf(task)
+        _uiState.update { currentState ->
+            val newTask = TaskUiState(
+                title = title ?: task.title,
+                description = description ?: task.description,
+                completionDate = completionDate ?: task.completionDate,
+                isCompleted = isCompleted ?: task.isCompleted
+            )
+            currentState.taskList[index] = newTask
+            currentState.copy(
+                currentTask = newTask
+            )
+        }
+    }
+
+    private fun preGenTasks(): MutableList<TaskUiState> {
+        val taskUiStateList: MutableList<TaskUiState> = mutableListOf()
         for (task in DataSource.tasks) {
-            taskList.add(
-                Task(
+            taskUiStateList.add(
+                TaskUiState(
                     title = task.first,
                     description = task.second,
                     completionDate = LocalDate.now().plusDays(Random.nextLong(-5, 5)),
@@ -107,6 +138,6 @@ class TaskViewModel : ViewModel() {
             ))
         }
 
-        return sortTasks(taskList)
+        return sortTasks(taskUiStateList)
     }
 }

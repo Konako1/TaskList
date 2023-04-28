@@ -2,11 +2,13 @@ package com.example.tasklistlab.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Cyan400 = Color(0xFF40ECA7)
-val Cyan600 = Color(0xFF1BD8A2)
-val Cyan950 = Color(0xFF16B394)
-val Blue400 = Color(0xFF4776BC)
-val Blue700 = Color(0xFF1F5EA2)
+val Blue400 = Color(0xFF40A1EC)
+val Blue600 = Color(0xFF1B86D8)
+val Blue950 = Color(0xFF166AB3)
+val Violet400 = Color(0xFF7047BC)
+val Violet700 = Color(0xFF511FA2)
 val Black = Color(0xFF000000)
 val White = Color(0xFFFFFFFF)
+val DarkGray = Color(0xFF2E2E2E)
+val NotReallyWhite = Color(0xFFEFF0F3)
 

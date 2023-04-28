@@ -2,7 +2,7 @@ package com.example.tasklistlab.data
 
 data class TaskListUiState(
     /** List of current Tasks */
-    val taskList: MutableList<Task> = mutableListOf(),
+    val taskList: MutableList<TaskUiState> = mutableListOf(),
 
-    var selectedTask: Task = Task()
+    var currentTask: TaskUiState = TaskUiState()
 )

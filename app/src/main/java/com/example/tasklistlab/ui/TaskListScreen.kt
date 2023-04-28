@@ -18,17 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -40,16 +36,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tasklistlab.R
-import com.example.tasklistlab.data.Task
-import com.example.tasklistlab.data.TaskListUiState
+import com.example.tasklistlab.data.TaskUiState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
 /**
- * Returns the colors of [Task], where first is background color and second if circle color
+ * Returns the colors of [TaskUiState], where first is background color and second if circle color
  */
-val Task.colorPalette: Pair<Color, Color>
+val TaskUiState.colorPalette: Pair<Color, Color>
     get() {
         var circleColor = Color(0xFF74FA51)
         var bgColor = Color(0xFF1BE00E)
@@ -67,25 +62,26 @@ val Task.colorPalette: Pair<Color, Color>
 
 @Composable
 fun TaskListScreen(
-    taskList: List<Task>,
-    changeSelectedTask: (Task) -> Unit,
+    taskUiStateList: List<TaskUiState>,
+    changeSelectedTask: (TaskUiState) -> Unit,
     onTaskClicked: () -> Unit,
-    onCompletedClicked: (Task) -> Unit,
+    onCompletedClicked: (TaskUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val lazyListState = rememberLazyListState()
     LazyColumn(
         state = lazyListState,
+        userScrollEnabled = true,
         modifier = modifier
     ) {
-        items(taskList) { task ->
+        items(taskUiStateList) { task ->
             TaskItemScreen(
                 onTaskClicked = {
                     changeSelectedTask(task)
                     onTaskClicked()
                 },
                 onCompletedClicked = onCompletedClicked,
-                task = task
+                taskUiState = task
             )
         }
     }
@@ -95,11 +91,11 @@ fun TaskListScreen(
 @Composable
 fun TaskItemScreen(
     onTaskClicked: () -> Unit,
-    onCompletedClicked: (Task) -> Unit,
-    task: Task,
+    onCompletedClicked: (TaskUiState) -> Unit,
+    taskUiState: TaskUiState,
     modifier: Modifier = Modifier
 ) {
-    val (bgColor, circleColor) = task.colorPalette
+    val (bgColor, circleColor) = taskUiState.colorPalette
 
     Row(
         modifier = modifier
@@ -114,14 +110,14 @@ fun TaskItemScreen(
                 .fillMaxWidth(0.14f)
                 .fillMaxHeight()
                 .background(color = bgColor)
-                .clickable { onCompletedClicked(task) }
+                .clickable { onCompletedClicked(taskUiState) }
         ) {
             Canvas(
                 modifier = modifier.fillMaxSize(0.7f)
             ) {
                 drawCircle(color = circleColor )
             }
-            if(task.isCompleted) {
+            if(taskUiState.isCompleted) {
                 Image(
                     painter = painterResource(id = R.drawable.checkmark),
                     contentDescription = null,
@@ -135,6 +131,7 @@ fun TaskItemScreen(
             modifier = modifier
                 .fillMaxSize()
                 .wrapContentHeight()
+                .background(Color.White)
                 .clickable { onTaskClicked() }
         ) {
             Row(
@@ -145,7 +142,7 @@ fun TaskItemScreen(
                     modifier = modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
                 ) {
                     Text(
-                        text = task.title,
+                        text = taskUiState.title,
                         fontSize = 28.sp,
                     )
                 }
@@ -155,7 +152,7 @@ fun TaskItemScreen(
                 verticalAlignment = Alignment.Top,
                 modifier = modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
             ) {
-                task.description?.let { Text(
+                taskUiState.description?.let { Text(
                     text = it,
                     fontSize = 16.sp,
                     softWrap = true
@@ -176,7 +173,7 @@ fun TaskItemScreen(
                 )
                 Spacer(modifier = modifier.size(6.dp))
                 Text(
-                    text = task.completionDate.format(DateTimeFormatter.ofPattern("dd MMMM y")),
+                    text = taskUiState.completionDate.format(DateTimeFormatter.ofPattern("dd MMMM y")),
                     fontSize = 14.sp,
                     softWrap = false
                 )
@@ -188,7 +185,7 @@ fun TaskItemScreen(
 
 @Composable
 fun TaskItemScreenPreview(viewModel: TaskViewModel = viewModel()) {
-    val task = Task(
+    val taskUiState = TaskUiState(
         title = "Задача",
         description = "Описание задачи dsfsafsafsd asf d f sad fsa df sad f sadf as df as f sa fs asdhgfjasjdf asdgjfhga ajsdhfg",
         completionDate = LocalDate.now().minusDays(0),
@@ -197,7 +194,7 @@ fun TaskItemScreenPreview(viewModel: TaskViewModel = viewModel()) {
     TaskItemScreen(
         onTaskClicked = {},
         onCompletedClicked = {},
-        task = task
+        taskUiState = taskUiState
     )
 }
 
@@ -207,7 +204,7 @@ fun TaskItemScreenPreview(viewModel: TaskViewModel = viewModel()) {
 fun TaskListScreenPreview(viewModel: TaskViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     TaskListScreen(
-        taskList = uiState.taskList,
+        taskUiStateList = uiState.taskList,
         changeSelectedTask = {},
         onTaskClicked = {},
         onCompletedClicked = {},

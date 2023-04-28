@@ -1,5 +1,6 @@
 package com.example.tasklistlab
 
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tasklistlab.ui.TaskViewModel
@@ -38,6 +40,7 @@ enum class TaskListRoutes(@StringRes val title: Int) {
 
 @Composable
 fun TopBar(
+    viewModel: TaskViewModel,
     currentScreen: TaskListRoutes,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
@@ -61,7 +64,12 @@ fun TopBar(
         modifier = modifier,
         navigationIcon = {
             if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
+                IconButton(
+                    onClick = {
+                        navigateUp()
+                        viewModel.updateTaskList()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(id = R.string.back_button)
@@ -84,6 +92,7 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
     Scaffold(
         topBar = {
             TopBar(
+                viewModel = viewModel,
                 currentScreen = currentScreen,
                 canNavigateBack = navController.previousBackStackEntry != null,
                 navigateUp = {
@@ -97,6 +106,7 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
+        val currentContext = LocalContext.current
 
         NavHost(
             navController = navController,
@@ -105,7 +115,7 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
         ) {
             composable(route = TaskListRoutes.Tasks.name) {
                 TaskListScreen(
-                    taskList = uiState.taskList,
+                    taskUiStateList = uiState.taskList,
                     changeSelectedTask = { task ->
                         viewModel.changeSelectedTask(task)
                     },
@@ -116,18 +126,42 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
                     },
                     onCompletedClicked = { task ->
                         viewModel.changeTaskCompletedValue(task)
+                        Toast.makeText(currentContext, if (task.isCompleted) "Задача выполнена!" else "Задача снова актуальна!", Toast.LENGTH_SHORT).show()
                         viewModel.updateTaskList()
                     }
                 )
             }
             composable(route = TaskListRoutes.Create.name) {
-                CreateTaskScreen(
+                viewModel.addTaskToList(
+                    title = uiState.currentTask.title,
+                    description = uiState.currentTask.description,
+                    completionDate = uiState.currentTask.completionDate
+                )
 
+                CreateTaskScreen(
+                    viewModel = viewModel,
+                    taskUiState = uiState.currentTask,
+                    onCreateClick = {
+                        viewModel.updateTaskList()
+                        Toast.makeText(currentContext, "Задача создана!", Toast.LENGTH_SHORT).show()
+                        navController.navigateUp()
+                    },
+                    onCancelClick = { task ->
+                        viewModel.deleteTask(task)
+                    }
                 )
             }
             composable(route = TaskListRoutes.Overview.name) {
                 TaskViewScreen(
-                    task = uiState.selectedTask
+                    viewModel = viewModel,
+                    taskUiState = uiState.currentTask,
+                    onDeleteClick = { viewModel.deleteTask(uiState.currentTask) },
+                    onCompletedClick = {
+                        viewModel.changeTaskCompletedValue(uiState.currentTask)
+                        viewModel.updateTaskList()
+                        Toast.makeText(currentContext,if (uiState.currentTask.isCompleted) "Задача выполнена!" else "Задача снова актуальна!", Toast.LENGTH_SHORT).show()
+                        navController.navigateUp()
+                    }
                 )
             }
         }
