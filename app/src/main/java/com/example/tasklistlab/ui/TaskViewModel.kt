@@ -67,12 +67,12 @@ class TaskViewModel : ViewModel() {
         return sortedTaskListUiState
     }
 
-    fun addTaskToList(title: String, description: String?, completionDate: LocalDate) {
+    fun addTaskToList(task: TaskUiState) {
         _uiState.update { currentState ->
             currentState.taskList.add(TaskUiState(
-                title = title,
-                description = description,
-                completionDate = completionDate
+                title = task.title,
+                description = task.description,
+                completionDate = task.completionDate
             ))
             currentState.copy(
                 taskList = currentState.taskList
@@ -100,7 +100,12 @@ class TaskViewModel : ViewModel() {
     }
 
     fun deleteTask(taskUiState: TaskUiState) {
-        _uiState.value.taskList.remove(taskUiState)
+        _uiState.update { currentState ->
+            currentState.taskList.remove(taskUiState)
+            currentState.copy(
+                taskList = currentState.taskList
+            )
+        }
     }
 
     fun editTaskData(
@@ -112,6 +117,20 @@ class TaskViewModel : ViewModel() {
     )
     {
         val index = _uiState.value.taskList.indexOf(task)
+        if (index == -1) {
+            _uiState.update { currentState ->
+                val newTask = TaskUiState(
+                    title = title ?: task.title,
+                    description = description ?: task.description,
+                    completionDate = completionDate ?: task.completionDate,
+                    isCompleted = isCompleted ?: false
+                )
+                currentState.copy(
+                    currentTask = newTask
+                )
+            }
+            return
+        }
         _uiState.update { currentState ->
             val newTask = TaskUiState(
                 title = title ?: task.title,

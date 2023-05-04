@@ -48,7 +48,7 @@ fun TaskViewScreen(
                 onClick = { onDeleteClick(taskUiState) },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.error,
-                    contentColor = MaterialTheme.colors.onPrimary
+                    contentColor = MaterialTheme.colors.onSecondary
                 ),
                 modifier = modifier.width(140.dp)
             ) {
@@ -59,11 +59,11 @@ fun TaskViewScreen(
                 colors = if (taskUiState.isCompleted)
                     ButtonDefaults.buttonColors(
                         backgroundColor = Color.Gray,
-                        contentColor = MaterialTheme.colors.onPrimary
+                        contentColor = MaterialTheme.colors.onSecondary
                 ) else
                     ButtonDefaults.buttonColors(
                         backgroundColor = Color(0xFF2EAD20),
-                        contentColor = MaterialTheme.colors.onPrimary
+                        contentColor = MaterialTheme.colors.onSecondary
                 ),
                 modifier = modifier.width(140.dp)
             ) {

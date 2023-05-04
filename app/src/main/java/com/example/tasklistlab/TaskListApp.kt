@@ -132,19 +132,14 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
                 )
             }
             composable(route = TaskListRoutes.Create.name) {
-                viewModel.addTaskToList(
-                    title = uiState.currentTask.title,
-                    description = uiState.currentTask.description,
-                    completionDate = uiState.currentTask.completionDate
-                )
-
                 CreateTaskScreen(
                     viewModel = viewModel,
                     taskUiState = uiState.currentTask,
-                    onCreateClick = {
+                    onCreateClick = { task ->
+                        viewModel.addTaskToList(task)
                         viewModel.updateTaskList()
-                        Toast.makeText(currentContext, "Задача создана!", Toast.LENGTH_SHORT).show()
                         navController.navigateUp()
+                        Toast.makeText(currentContext, "Задача создана!", Toast.LENGTH_SHORT).show()
                     },
                     onCancelClick = { task ->
                         viewModel.deleteTask(task)
@@ -155,7 +150,13 @@ fun TaskListApp(modifier: Modifier = Modifier, viewModel: TaskViewModel = viewMo
                 TaskViewScreen(
                     viewModel = viewModel,
                     taskUiState = uiState.currentTask,
-                    onDeleteClick = { viewModel.deleteTask(uiState.currentTask) },
+                    onDeleteClick = {
+                        viewModel.deleteTask(uiState.currentTask)
+                        viewModel.updateTaskList()
+                        Toast.makeText(currentContext,"Задача удалена!", Toast.LENGTH_SHORT).show()
+                        navController.navigateUp()
+
+                    },
                     onCompletedClick = {
                         viewModel.changeTaskCompletedValue(uiState.currentTask)
                         viewModel.updateTaskList()

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -60,6 +61,18 @@ val TaskUiState.colorPalette: Pair<Color, Color>
     }
 
 
+fun cutTextField(textLen: Int, textField: String?): String {
+    if (textField == null)
+        return ""
+    if (textField.length < textLen)
+        return textField
+
+    return textField
+        .removeRange(textLen, textField.length)
+        .plus("...")
+}
+
+
 @Composable
 fun TaskListScreen(
     taskUiStateList: List<TaskUiState>,
@@ -71,7 +84,6 @@ fun TaskListScreen(
     val lazyListState = rememberLazyListState()
     LazyColumn(
         state = lazyListState,
-        userScrollEnabled = true,
         modifier = modifier
     ) {
         items(taskUiStateList) { task ->
@@ -131,7 +143,7 @@ fun TaskItemScreen(
             modifier = modifier
                 .fillMaxSize()
                 .wrapContentHeight()
-                .background(Color.White)
+                .background(MaterialTheme.colors.onPrimary)
                 .clickable { onTaskClicked() }
         ) {
             Row(
@@ -142,8 +154,9 @@ fun TaskItemScreen(
                     modifier = modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
                 ) {
                     Text(
-                        text = taskUiState.title,
+                        text = cutTextField(15, taskUiState.title),
                         fontSize = 28.sp,
+                        color = MaterialTheme.colors.onSecondary
                     )
                 }
             }
@@ -152,11 +165,12 @@ fun TaskItemScreen(
                 verticalAlignment = Alignment.Top,
                 modifier = modifier.padding(8.dp, 8.dp, 8.dp, 0.dp)
             ) {
-                taskUiState.description?.let { Text(
-                    text = it,
+                Text(
+                    text = cutTextField(70, taskUiState.description),
+                    color = MaterialTheme.colors.onSecondary,
                     fontSize = 16.sp,
                     softWrap = true
-                ) }
+                )
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -169,12 +183,14 @@ fun TaskItemScreen(
                 Image(
                     painter = painterResource(id = R.drawable.calendar_image),
                     contentDescription = null,
-                    modifier = modifier.size(14.dp)
+                    modifier = modifier.size(14.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary)
                 )
                 Spacer(modifier = modifier.size(6.dp))
                 Text(
                     text = taskUiState.completionDate.format(DateTimeFormatter.ofPattern("dd MMMM y")),
                     fontSize = 14.sp,
+                    color = MaterialTheme.colors.onSecondary,
                     softWrap = false
                 )
             }

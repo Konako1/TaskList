@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Shapes
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,7 +25,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -36,6 +39,7 @@ import com.example.tasklistlab.R
 import com.example.tasklistlab.data.TaskListUiState
 import com.example.tasklistlab.data.TaskUiState
 import com.example.tasklistlab.ui.TaskViewModel
+import com.example.tasklistlab.ui.theme.Shapes
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -57,10 +61,18 @@ fun TaskDataScreen(
     Column(
         modifier = modifier.padding(14.dp).fillMaxWidth()
     ) {
-        Text(
-            text = "Название",
-            fontSize = 30.sp,
-        )
+        Row {
+            Text(
+                text = "Название",
+                fontSize = 30.sp,
+                color = MaterialTheme.colors.onSecondary
+            )
+            Text(
+                text = " *",
+                fontSize = 30.sp,
+                color = Color.Red
+            )
+        }
         OutlinedTextField(
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
@@ -76,19 +88,23 @@ fun TaskDataScreen(
                     title = title
                 )
             },
-            textStyle = TextStyle(fontSize = 20.sp),
+            textStyle = TextStyle(
+                fontSize = 20.sp,
+                color = MaterialTheme.colors.onSecondary
+            ),
             modifier = modifier
                 .fillMaxWidth()
                 .padding(
                     top = 8.dp,
                     bottom = 16.dp
                 )
-                .background(Color.White)
+                .background(MaterialTheme.colors.onPrimary)
         )
 
         Text(
             text = "Описание",
             fontSize = 30.sp,
+            color = MaterialTheme.colors.onSecondary
         )
         OutlinedTextField(
             keyboardOptions = KeyboardOptions(
@@ -105,19 +121,23 @@ fun TaskDataScreen(
                     description = description
                 )
             },
-            textStyle = TextStyle(fontSize = 20.sp),
+            textStyle = TextStyle(
+                fontSize = 20.sp,
+                color = MaterialTheme.colors.onSecondary
+            ),
             modifier = modifier
                 .fillMaxWidth()
                 .padding(
                     top = 8.dp,
                     bottom = 16.dp
                 )
-                .background(Color.White)
+                .background(MaterialTheme.colors.onPrimary)
         )
 
         Text(
             text = "Дата Выполнения",
-            fontSize = 30.sp
+            fontSize = 30.sp,
+            color = MaterialTheme.colors.onSecondary
         )
 
         val dialogState = rememberMaterialDialogState()
@@ -131,7 +151,7 @@ fun TaskDataScreen(
                 .clickable {
                     dialogState.show()
                 }
-                .background(Color.White)
+                .background(MaterialTheme.colors.onPrimary)
         ) {
             MaterialDialog(
                 dialogState = dialogState,
@@ -148,7 +168,6 @@ fun TaskDataScreen(
                         taskUiState,
                         completionDate = completionDate
                     )
-                    viewModel.updateTaskList()
                 }
             }
             Row(
@@ -158,7 +177,7 @@ fun TaskDataScreen(
             ) {
                 Text(
                     text = completionDate.format(DateTimeFormatter.ofPattern("dd MMMM yyy")),
-                    color = MaterialTheme.colors.onSurface,
+                    color = MaterialTheme.colors.onSecondary,
                     modifier = Modifier
                         .padding(16.dp)
                 )
@@ -170,6 +189,16 @@ fun TaskDataScreen(
                         .size(20.dp)
                 )
             }
+        }
+        Row {
+            val requiredText = if (taskUiState.title == "") "Заполните обязательные поля!" else ""
+            Text(
+                text = requiredText,
+                color = Color.Red,
+                modifier = modifier
+                    .padding(top = 16.dp, end = 16.dp)
+            )
+
         }
     }
 }
